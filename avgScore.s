@@ -3,12 +3,15 @@
 orig: .space 100	# In terms of bytes (25 elements * 4 bytes each)
 sorted: .space 100
 
-str0: .asciiz "Enter the number of assignments (between 1 and 25): "
-str1: .asciiz "Enter score: "
-str2: .asciiz "Original scores: "
-str3: .asciiz "Sorted scores (in descending order): "
-str4: .asciiz "Enter the number of (lowest) scores to drop: "
-str5: .asciiz "Average (rounded down) with dropped scores removed: "
+str0: 	.asciiz "Enter the number of assignments (between 1 and 25): "
+str1: 	.asciiz "Enter score: "
+str2: 	.asciiz "Original scores: "
+str3: 	.asciiz "Sorted scores (in descending order): "
+str4: 	.asciiz "Enter the number of (lowest) scores to drop: "
+str5: 	.asciiz "Average (rounded down) with dropped scores removed: "
+
+space: 	.asciiz " "
+nl:	.asciiz "\n"
 
 .text 
 
@@ -89,7 +92,39 @@ end:	lw $ra, 0($sp)
 # printList takes in an array and its size as arguments. 
 # It prints all the elements in one line with a newline at the end.
 printArray:
+
 	# Your implementation of printList here	
+	
+	addi $t0, $zero, 0		# initialize i = 0
+	
+loopStart:
+
+	bge $t0, $a1, loopEnd		# break if (i >= len)
+
+	# $t2 = arr[i]
+	sll $t1, $t0, 2			# multiply i by 4
+	add $t2, $a0, $t1		# $t2 = arr + i
+	
+	# print arr[i]
+	lw $a0, 0($t2)			# set $a0 to arr[i]
+	li $v0, 1			# syscall value for printInt
+	syscall
+	
+	# print space
+	la $a0, space			# set $a0 to a space
+	li $v0, 4			# syscall value for printString
+	syscall
+	
+	addi $t0, $t0, 4		# i++
+	
+	j loopStart
+
+loopEnd:
+
+	# print newline
+	la $a0, nl			# set $a0 to newline
+	li $v0, 4			# syscall value for printString
+	syscall
 
 	jr $ra
 	
@@ -99,8 +134,30 @@ printArray:
 selSort:
 	# Your implementation of selSort here
 	
-	jr $ra
+	addi $t0, $zero, 0		# initialize i = 0
 	
+cloneLoop:
+
+	bge $t0, $a0, outerLoop		# break if (i >= len)
+	
+	sll $t2, $t0, 2			# multiply i by 4
+	add $t3, $s1, $t2		# $t3 = &orig[i]
+	add $t4, $s2, $t2		# $t4 = &sorted[i]
+	
+	# clone orig to sorted
+	lw $t5, 0($t3)			# $t5 = orig[i]
+	sw $t5, 0($t4)			# store orig[i] into &sorted[i]
+	
+	addi $t0, $t0, 1
+	j cloneLoop
+
+	
+# selection sort begins	
+outerLoop:
+
+	
+	
+jr $ra
 	
 # calcSum takes in an array and its size as arguments.
 # It RECURSIVELY computes and returns the sum of elements in the array.
