@@ -83,6 +83,21 @@ loop_in:
 	# Your code here to compute average and print it (you may also end up having some code here to help 
 	# handle the case when number of (lowest) scores to drop equals the number of scores
 	
+	move $t0, $v0
+	
+	#div $v0, $a0		# (sum of scores) / (numScores - drop)
+	#mflo $t0		# $t0 = quotient
+	
+	# print the string about average
+	li $v0, 4 
+	la $a0, str5 
+	syscall
+	
+	# print the average
+	li $v0, 1
+	move $a0, $t0		# argument is set to our average
+	syscall			# print the average
+	
 end:	lw $ra, 0($sp)
 	addi $sp, $sp 4
 	li $v0, 10 
@@ -224,5 +239,35 @@ endSel:
 calcSum:
 	# Your implementation of calcSum here
 	
+	ble $a1, $zero, return		# if (len <= 0) return
+	
+	addi $sp, $sp, -12
+	sw $ra, 0($sp)
+	sw $a0, 4($sp)
+	sw $a1, 8($sp)
+	
+	addi $a1, $a1, -1		# $a1 = len - 1
+	jal calcSum
+	
+	#addi $t0, $a1, -1		# $t0 = len - 1
+	move $t0, $a1
+	
+	sll $t1, $t0, 2			# $t1 = 4 * (len - 1)
+	add $t2, $a0, $t1		# $t2 = arr[len - 1]
+	lw $t2, 0($t2)			# $t2 = the value of arr[len - 1]
+	
+	add $v0, $v0, $t2		# $v0 = calcSum(arr, len - 1) + arr[len - 1]
+	
+	# restore return address and arguments
+	lw $ra, 0($sp)
+	lw $a0, 4($sp)
+	lw $a1, 8($sp)
+	addi $sp, $sp, 12
+	
+	jr $ra
+	
+return:
+
+	li $v0, 0			# return the value 0
 	jr $ra
 	
