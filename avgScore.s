@@ -104,18 +104,22 @@ loopStart:
 	# $t2 = arr[i]
 	sll $t1, $t0, 2			# multiply i by 4
 	add $t2, $a0, $t1		# $t2 = arr + i
+	lw $t3, 0($t2)			# load arr[i] into $t3
 	
 	# print arr[i]
-	lw $a0, 0($t2)			# set $a0 to arr[i]
+	move $t4, $a0			# store array address in $t4
+	move $a0, $t3			# set $a0 to arr[i]
 	li $v0, 1			# syscall value for printInt
-	syscall
+	syscall				# prints the integer in $a0
 	
 	# print space
 	la $a0, space			# set $a0 to a space
 	li $v0, 4			# syscall value for printString
 	syscall
 	
-	addi $t0, $t0, 4		# i++
+	move $a0, $t4			# restore $a0
+	
+	addi $t0, $t0, 1		# i++
 	
 	j loopStart
 
@@ -131,33 +135,88 @@ loopEnd:
 	
 # selSort takes in the number of scores as argument. 
 # It performs SELECTION sort in descending order and populates the sorted array
+# $s1 = orig, $s2 = sorted, #a0 = len
 selSort:
-	# Your implementation of selSort here
-	
-	addi $t0, $zero, 0		# initialize i = 0
-	
-cloneLoop:
+
+    	move $t0, $zero         	# i = 0
+    
+copyLoop:
 
 	bge $t0, $a0, outerLoop		# break if (i >= len)
 	
-	sll $t2, $t0, 2			# multiply i by 4
-	add $t3, $s1, $t2		# $t3 = &orig[i]
-	add $t4, $s2, $t2		# $t4 = &sorted[i]
+	# $t2 = orig[i]
+	sll $t1, $t0, 2			# multiply i by 4
+	add $t2, $s1, $t1		# $t2 = orig + i
+	lw $t3, 0($t2)			# load orig[i] into $t3
 	
-	# clone orig to sorted
-	lw $t5, 0($t3)			# $t5 = orig[i]
-	sw $t5, 0($t4)			# store orig[i] into &sorted[i]
+	add $t4, $s2, $t1		# $t4 = sorted + i
+	
+	sw $t3, 0($t4)			# store contents of orig[i] at address sorted[i]
 	
 	addi $t0, $t0, 1
-	j cloneLoop
-
+	j copyLoop
 	
-# selection sort begins	
 outerLoop:
 
+	move $t0, $zero			# i = 0
 	
+startOuterLoop:
+
+	addi $t3, $a0, -1		# $t3 = len - 1
+	bge $t0, $t3, endSel		# break if (i >= (len - 1))
 	
-jr $ra
+	move $t2, $t0			# maxIndex = i
+	
+innerLoop:
+
+	addi $t1, $t0, 1		# j = i + 1
+	
+startInnerLoop:
+
+	bge $t1, $a0, endOuterLoop		# break if (j >= len)
+	
+	# $t5 = sorted[j]
+	sll $t4, $t1, 2			# multiply j by 4
+	add $t5, $s2, $t4		# $t5 = sorted + j
+	lw $t5, 0($t5)			# load sorted[j] into $t5
+	
+	# $t6 = sorted[maxIndex]
+	sll $t4, $t2, 2			# multiply maxIndex by 4
+	add $t6, $s2, $t4		# $t6 = sorted + maxIndex
+	lw $t6, 0($t6)			# load sorted[maxIndex] into $t6
+	
+	ble $t5, $t6, endInnerLoop	# if (sorted[j] <= sorted[maxIndex]) then continue
+	
+	move $t2, $t1			# move j into maxIndex
+	
+endInnerLoop:
+
+	addi $t1, $t1, 1
+	j startInnerLoop
+	
+endOuterLoop:
+
+	# sorted[maxIndex]
+	sll $t3, $t2, 2
+	add $t4, $s2, $t3		# $t4 = address of sorted[maxIndex]
+	lw $t5, 0($t4)			# $t5 = value of sorted[maxIndex]
+	
+	# sorted[i]
+	sll $t3, $t0, 2
+	add $t6, $s2, $t3		# $t6 = address of sorted[i]
+	lw $t7, 0($t6)			# $t7 = vlaue of sorted[i]
+	
+	move $t8, $t5			# $t8 = value of sorted[maxValue]
+	sw $t7, 0($t4)			# store value of sorted[i] into sorted[maxIndex]
+	sw $t8, 0($t6)			# store value of sorted[maxIndex] into sorted[i]
+	
+	addi $t0, $t0, 1
+	j startOuterLoop
+	
+endSel:
+
+	jr $ra
+
 	
 # calcSum takes in an array and its size as arguments.
 # It RECURSIVELY computes and returns the sum of elements in the array.
