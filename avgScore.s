@@ -71,6 +71,8 @@ loop_in:
 	move $a0, $s2	# More efficient than la $a0, sorted
 	jal printArray	# Print sorted scores
 	
+dropScores:
+	
 	li $v0, 4 
 	la $a0, str4 
 	syscall 
@@ -79,7 +81,9 @@ loop_in:
 	
 	# Your code here to handle invalid number of (lowest) scores to drop (can't be less than 0, or 
 	# greater than the number of scores). Also, handle the case when number of (lowest) scores to drop 
-	# equals the number of scores. 
+	# equals the number of scores.
+	blt $v0, $zero, dropScores
+	bge $v0, $s0, dropScores
 	
 	move $a1, $v0
 	sub $a1, $s0, $a1	# numScores - drop
