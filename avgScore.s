@@ -33,6 +33,12 @@ main:
 	syscall
 	
 	# Your code here to handle invalid number of scores (can't be less than 1 or greater than 25)
+	addi $t0, $zero, 1
+	blt $v0, $t0, main
+	
+	addi $t0, $zero, 25
+	bgt $v0, $t0, main
+	
 	
 	move $s0, $v0	# $s0 = numScores
 	move $t0, $0
@@ -83,10 +89,8 @@ loop_in:
 	# Your code here to compute average and print it (you may also end up having some code here to help 
 	# handle the case when number of (lowest) scores to drop equals the number of scores
 	
-	move $t0, $v0
-	
-	#div $v0, $a0		# (sum of scores) / (numScores - drop)
-	#mflo $t0		# $t0 = quotient
+	div $v0, $a1		# (sum of scores) / (numScores - drop)
+	mflo $t0		# $t0 = quotient
 	
 	# print the string about average
 	li $v0, 4 
