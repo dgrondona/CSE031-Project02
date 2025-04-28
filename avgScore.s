@@ -9,6 +9,7 @@ str2: 	.asciiz "Original scores: "
 str3: 	.asciiz "Sorted scores (in descending order): "
 str4: 	.asciiz "Enter the number of (lowest) scores to drop: "
 str5: 	.asciiz "Average (rounded down) with dropped scores removed: "
+str6:	.asciiz "All scores dropped!"
 
 space: 	.asciiz " "
 nl:	.asciiz "\n"
@@ -83,7 +84,17 @@ dropScores:
 	# greater than the number of scores). Also, handle the case when number of (lowest) scores to drop 
 	# equals the number of scores.
 	blt $v0, $zero, dropScores
-	bge $v0, $s0, dropScores
+	bgt $v0, $s0, dropScores
+	
+	bne $v0, $s0, continueAvg
+	
+	li $v0, 4
+	la $a0, str6
+	syscall
+	
+	j end
+	
+continueAvg:
 	
 	move $a1, $v0
 	sub $a1, $s0, $a1	# numScores - drop
